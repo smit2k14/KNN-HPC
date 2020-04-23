@@ -32,8 +32,7 @@ struct timespec diff(struct timespec start, struct timespec end){
 	return temp;
 }
 
-// class KNN
-// {
+// class KNN {
 //     public:
 
 // 		KNN() {}
@@ -51,17 +50,17 @@ struct timespec diff(struct timespec start, struct timespec end){
 // 			return v;
 // 		}
 
-// 		vector< vector< double > > read_file(string fname) {
+// 		vector< pair< vector< double >, double> > read_file(string fname) {
 // 			ifstream reader;
 // 			reader.open(fname);
-// 			vector< vector< double > > csv_values;
+// 			vector< pair< vector< double >, double> > csv_values;
+			
 // 			if (reader.is_open()) {
 // 				string inp_line;
 // 				while(getline(reader, inp_line)) 
-// 					csv_values.push_back(split(inp_line, ','));
+// 					csv_values.push_back(make_pair(split(inp_line, ','), 0));
 // 			}
-			// for (auto i=0; i<csv_values.size(); i++)
-			// 	csv_values[i].push_back(0);
+
 // 			return csv_values;
 // 		}
 // };
@@ -78,29 +77,27 @@ vector< double > split(string line, char value) {
 	return v;
 }
 
-vector< vector< double > > read_file(string fname) {
+vector< pair< vector< double >, double> > read_file(string fname) {
 	ifstream reader;
 	reader.open(fname);
-	vector< vector< double > > csv_values;
+	vector< pair< vector< double >, double> > csv_values;
+
 	if (reader.is_open()) {
 		string inp_line;
 		while(getline(reader, inp_line)) 
-			csv_values.push_back(split(inp_line, ','));
+			csv_values.push_back(make_pair(split(inp_line, ','), INT64_MAX));
 	}
-	for (auto i=0; i<csv_values.size(); i++)
-		csv_values[i].push_back(INT64_MAX);
-	
+
 	return csv_values;
 }
 
-bool comparison (vector< double> a, vector <double> b) {
-	if (a[2] < b[2]) return true;
+bool comparison (pair< vector< double >, double> a, pair< vector< double >, double> b) {
+	if (a.second < b.second) return true;
 	
 	return false;
 }
 
 int main(int argc, char* argv[]) {
-	long long MATRIX_SIZE = 1024;
 
 	struct timespec start_e2e, end_e2e, start_alg, end_alg, e2e, alg;
 	/* Should start before anything else */
@@ -115,7 +112,7 @@ int main(int argc, char* argv[]) {
 	int n=atoi(argv[1]);    /* size of input array */
 	int p=atoi(argv[2]);    /* number of processors*/
 	string fname = argv[3]; /* the input filename for points */
-	int k = atoi(argv[4]);
+	int k = atoi(argv[4]);	/* k in knn :) */
 
 	string problem_name = "matrix_multiplication";
 	string approach_name = "block";
@@ -130,11 +127,9 @@ int main(int argc, char* argv[]) {
 	//**********************
 	int num_step=atof(argv[1]);
 
-	vector< vector< double > > points = read_file(fname);
+	vector< pair< vector< double >, double> > points = read_file(fname);
 
 	int point = (rand() % points.size()); /* this is the point we'll calculate the nearest neighbors from */
-
-	//**********************
 
 	// #omp_set_num_threads(p);
 	clock_gettime(CLK, &start_alg);    /* Start the algo timer */
@@ -142,19 +137,23 @@ int main(int argc, char* argv[]) {
 	/*----------------------Core algorithm starts here----------------------------------------------*/
 
 	for(auto i=0; i< points.size(); i++) {
-		points[i][2] = sqrt( ((points[i][0] - points[point][0]) * (points[i][0] - points[point][0])) + 
-								((points[i][1] - points[point][1]) + (points[i][1] - points[point][1])));
+		double dist = 0;
+		for(auto j=0; j<points[i].first.size(); j++) {
+			dist += (points[i].first[j] - points[point].first[j]) * (points[i].first[j] - points[point].first[j]);
+		}
+		points[i].second = dist;
 	}
 
 	sort(begin(points), end(points), comparison);
 
-	// return the first k but i dont think thats needed.
+	// return the first k but i dont think thats needed for now.
 
 	/*----------------------Core algorithm finished--------------------------------------------------*/
 
 	clock_gettime(CLK, &end_alg);    /* End the algo timer */
 	/* Ensure that only the algorithm is present between these two
-	   timers. Further, the whole algorithm should be present. */
+	   timers. Further, the whole algorithm should be present. 
+	*/
 
 
 	/* Should end before anything else (printing comes later) */
@@ -167,7 +166,7 @@ int main(int argc, char* argv[]) {
 		Change problem_name to whatever problem you've been assigned
 		Change approach_name to whatever approach has been assigned
 		p should be 0 for serial codes!! 
-		*/
+	*/
 	//printf("%s,%s,%d,%d,%d,%ld,%d,%ld\n", problem_name, approach_name, n, p, e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
 	return 0;
