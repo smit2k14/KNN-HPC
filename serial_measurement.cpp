@@ -104,16 +104,13 @@ int main(int argc, char* argv[]) {
 	clock_gettime(CLK, &start_e2e);
 
 	/* Check if enough command-line arguments are taken in. */
-	if(argc < 5){
-		printf( "Usage: %s sizeOfInputArray processors inputFile k \n", argv[0] );
+	if(argc < 2){
+		printf( "Usage: %s inputFile \n", argv[0] );
 		return -1;
 	}
 
-	int n=atoi(argv[1]);    /* size of input array */
-	int p=atoi(argv[2]);    /* number of processors*/
-	string fname = argv[3]; /* the input filename for points */
-	int k = atoi(argv[4]);	/* k in knn :) */
-
+	string fname = argv[1]; /* the input filename for points */
+	
 	string problem_name = "matrix_multiplication";
 	string approach_name = "block";
 	//    char buffer[10];
@@ -144,7 +141,6 @@ int main(int argc, char* argv[]) {
 		points[i].second = dist;
 	}
 
-	sort(begin(points), end(points), comparison);
 
 	// return the first k but i dont think thats needed for now.
 
@@ -154,7 +150,7 @@ int main(int argc, char* argv[]) {
 	/* Ensure that only the algorithm is present between these two
 	   timers. Further, the whole algorithm should be present. 
 	*/
-
+	sort(begin(points), end(points), comparison);
 
 	/* Should end before anything else (printing comes later) */
 	clock_gettime(CLK, &end_e2e);
@@ -168,6 +164,9 @@ int main(int argc, char* argv[]) {
 		p should be 0 for serial codes!! 
 	*/
 	//printf("%s,%s,%d,%d,%d,%ld,%d,%ld\n", problem_name, approach_name, n, p, e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
+	FILE *outFile;
+	outFile = fopen("output_file.txt", "a");
+	fprintf(outFile, "%ld,%ld,%ld,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
 	return 0;
 
