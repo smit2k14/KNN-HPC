@@ -79,12 +79,14 @@ else:
         line_proc_alg = pickle.load(f)
     
 # (processor, line, feature)
-
+temp = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 for i in range(10):
     plt.figure(i+1, figsize = (20, 20))
     for j in range(10):
         plt.plot([_ for _ in range(1, 16)], line_proc_alg[:,i,j])
-    plt.legend(['N_Processors 1', 'N_Processors 2', 'N_Processors 3', 'N_Processor 4', \
-        'N_Processors 5', 'N_Processors 6', 'N_Processors 7', 'N_Processors 8', 'N_Processors 9', 'N_Processors 10', \
-            'N_Processors 11', 'N_Processors 12', 'N_Processors 13', 'N_Processors 14', 'N_Processors 15'])
+    plt.legend(['N_Features 4', 'N_Features number 8', 'N_Features number 16', 'N_Features number 32', 'N_Features number 64', \
+        'N_Features number 128', 'N_Features number 256', 'N_Features number 512', 'N_Features number 1024', 'N_Features number 2048'])
+    plt.title('N_Lines {}'.format(temp[i]))
+    plt.xlabel('No of Processors')
+    plt.ylabel('Time')
     plt.savefig('plots/line_'+str(i+1)+'.png')
