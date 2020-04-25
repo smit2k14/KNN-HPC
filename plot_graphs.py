@@ -85,5 +85,6 @@ for i in range(10):
     for j in range(10):
         plt.plot([_ for _ in range(1, 16)], line_proc_alg[:,i,j])
     plt.legend(['N_Processors 1', 'N_Processors 2', 'N_Processors 3', 'N_Processor 4', \
-        'N_Processors 5', 'N_Processors 6', 'N_Processors 7', 'N_Processors 8', 'N_Processors 9', 'N_Processors 10', ])
+        'N_Processors 5', 'N_Processors 6', 'N_Processors 7', 'N_Processors 8', 'N_Processors 9', 'N_Processors 10', \
+            'N_Processors 11', 'N_Processors 12', 'N_Processors 13', 'N_Processors 14', 'N_Processors 15'])
     plt.savefig('plots/line_'+str(i+1)+'.png')
