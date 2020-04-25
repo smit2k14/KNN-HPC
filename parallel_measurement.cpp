@@ -104,15 +104,14 @@ int main(int argc, char* argv[]) {
 	clock_gettime(CLK, &start_e2e);
 
 	/* Check if enough command-line arguments are taken in. */
-	if(argc < 5){
-		printf( "Usage: %s sizeOfInputArray processors inputFile k \n", argv[0] );
+	if(argc < 3){
+		printf( "Usage: %s processors inputFile\n", argv[0] );
 		return -1;
 	}
-
-	int n=atoi(argv[1]);    /* size of input array */
-	int p=atoi(argv[2]);    /* number of processors*/
-	string fname = argv[3]; /* the input filename for points */
-	int k = atoi(argv[4]);	/* k in knn :) */
+  /* size of input array */
+	int p=atoi(argv[1]);    /* number of processors*/
+	string fname = argv[2]; /* the input filename for points */
+	//int k = atoi(argv[3]);	/* k in knn :) */
 
 	string problem_name = "matrix_multiplication";
 	string approach_name = "block";
@@ -122,7 +121,7 @@ int main(int argc, char* argv[]) {
 	//    inputFile = fopen(argv[3],"r");
 
 	char outputFileName[50];        
-	sprintf(outputFileName,"output/%s_%s_%s_%s_output.txt",problem_name,approach_name,argv[1],argv[2]); 
+	sprintf(outputFileName,"output/%d_%d_output.txt",argv[1],argv[2]); 
 
 	//**********************
 	int num_step=atof(argv[1]);
@@ -131,16 +130,17 @@ int main(int argc, char* argv[]) {
 
 	int point = (rand() % points.size()); /* this is the point we'll calculate the nearest neighbors from */
 
+	omp_set_num_threads(p);
 	// #omp_set_num_threads(p);
 	clock_gettime(CLK, &start_alg);    /* Start the algo timer */
 
 	/*----------------------Core algorithm starts here----------------------------------------------*/
-    #pragma omp private(i, j, dist)
+	
+    #pragma omp private(i, j, dist) num_threads(p)
     {
         #pragma omp for
         for(auto i=0; i< points.size(); i++) {
             double dist = 0;
-            #pragma omp for
             for(auto j=0; j<points[i].first.size(); j++) {
                 dist += (points[i].first[j] - points[point].first[j]) * (points[i].first[j] - points[point].first[j]);
             }
@@ -164,6 +164,9 @@ int main(int argc, char* argv[]) {
 	e2e = diff(start_e2e, end_e2e);
 	alg = diff(start_alg, end_alg);
 
+	FILE *outFile;
+	outFile = fopen("output_file_parallel.txt", "a");
+	fprintf(outFile, "%ld,%ld,%ld,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
 	/* problem_name,approach_name,n,p,e2e_sec,e2e_nsec,alg_sec,alg_nsec
 		Change problem_name to whatever problem you've been assigned

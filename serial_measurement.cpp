@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 	*/
 	//printf("%s,%s,%d,%d,%d,%ld,%d,%ld\n", problem_name, approach_name, n, p, e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 	FILE *outFile;
-	outFile = fopen("output_file.txt", "a");
+	outFile = fopen("output_file_serial.txt", "a");
 	fprintf(outFile, "%ld,%ld,%ld,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
 	return 0;
