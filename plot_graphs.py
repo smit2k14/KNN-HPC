@@ -3,10 +3,10 @@ import numpy as np
 import pickle
 import os
 
-if not os.listdir('./Alg.pkl'):
+if os.path.isdir(os.getcwd() + '/Alg.pkl') and os.path.isdir(os.getcwd() + '/End.pkl'):
     line_proc_end = []
     line_proc_alg = []
-
+    
     temp_line_1 = []
     temp_line_2 = []
 
@@ -71,3 +71,19 @@ if not os.listdir('./Alg.pkl'):
 
     with open('End.pkl', 'wb') as f:
         pickle.dump(line_proc_end, f)
+else:
+    with open('End.pkl', 'rb') as f:
+        line_proc_end = pickle.load(f)
+
+    with open('Alg.pkl', 'rb') as f:
+        line_proc_alg = pickle.load(f)
+    
+# (processor, line, feature)
+
+for i in range(10):
+    plt.figure(i+1, figsize = (20, 20))
+    for j in range(10):
+        plt.plot([_ for _ in range(1, 16)], line_proc_alg[:,i,j])
+    plt.legend(['N_Processors 1', 'N_Processors 2', 'N_Processors 3', 'N_Processor 4', \
+        'N_Processors 5', 'N_Processors 6', 'N_Processors 7', 'N_Processors 8', 'N_Processors 9', 'N_Processors 10', ])
+    plt.savefig('plots/line_'+str(i+1)+'.png')
