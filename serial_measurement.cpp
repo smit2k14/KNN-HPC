@@ -69,7 +69,7 @@ vector< double > split(string line, char value) {
 	vector< double > v;
 	string temp_string = "";
 	for(int i = 0; i<line.length();i++) {
-		if(line[i] == value) \
+		if(line[i] == value)
 			v.push_back(stod(temp_string));
 		else 
 			temp_string+=line[i];
@@ -85,7 +85,7 @@ vector< pair< vector< double >, double> > read_file(string fname) {
 	if (reader.is_open()) {
 		string inp_line;
 		while(getline(reader, inp_line)) 
-			csv_values.push_back(make_pair(split(inp_line, ','), INT64_MAX));
+			csv_values.push_back(make_pair(split(inp_line, ','), 0));
 	}
 
 	return csv_values;
@@ -133,14 +133,15 @@ int main(int argc, char* argv[]) {
 
 	/*----------------------Core algorithm starts here----------------------------------------------*/
 
-	for(auto i=0; i< points.size(); i++) {
+	for(int i=0; i< points.size(); i++) {
 		double dist = 0;
-		for(auto j=0; j<points[i].first.size(); j++) {
+		for(int j=0; j<points[i].first.size(); j++) {
 			dist += (points[i].first[j] - points[point].first[j]) * (points[i].first[j] - points[point].first[j]);
 		}
 		points[i].second = dist;
 	}
 
+	sort(points.begin(), points.end(), comparison);
 
 	// return the first k but i dont think thats needed for now.
 
@@ -150,7 +151,6 @@ int main(int argc, char* argv[]) {
 	/* Ensure that only the algorithm is present between these two
 	   timers. Further, the whole algorithm should be present. 
 	*/
-	sort(begin(points), end(points), comparison);
 
 	/* Should end before anything else (printing comes later) */
 	clock_gettime(CLK, &end_e2e);
