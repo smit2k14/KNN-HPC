@@ -1,9 +1,9 @@
-#include<omp.h>
 #include<stdio.h>
-#include<bits/stdc++.h>
-
-using namespace std;
-
+#include<math.h>
+#include<omp.h>
+#include<time.h>
+#include<string.h>
+#include<stdlib.h>
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 //  Using the MONOTONIC clock 
@@ -34,43 +34,54 @@ struct timespec diff(struct timespec start, struct timespec end){
     return temp;
 }
 
-class KNN {
-    public:
+double* split(char* line, char value, int n_features) 
+{
+    char *temp_string;
+    temp_string = (char *)malloc(sizeof(char)*20);
+    double *feature_array = (double *) malloc(sizeof(double)*n_features);
+    int cnt = 0;
+    int cnt2=0;
+    for(int i = 0; i<strlen(line);i++)
+    {
+        if(line[i] == value)
+        {
+            char *temp_blah;
+            feature_array[cnt++] = strtod(temp_string, &temp_blah);
+            temp_string = (char *)malloc(sizeof(char)*20);
+        }
+        else
+        {
+            temp_string[cnt2++] = line[i];
+        }   
+    }
+    return feature_array;
+}
 
-        KNN() {}
-        ~KNN() {}
+double** read_file(char* fname, int n_lines, int n_features)
+{
+    FILE* reader;
+    reader = fopen(fname, "r");
+    double **csv_values = (double**)malloc(sizeof(double *)*n_lines);
 
-        vector< double > split(string line, char value) 
-		{
-			vector< double > v;
-			string temp_string = "";
-			for(int i = 0; i<line.length();i++) {
-				if(line[i] == value) \
-					v.push_back(stod(temp_string));
-				else 
-					temp_string+=line[i];
-			}
-			return v;
-		}
+    for(int l = 0; l<n_lines; l++)
+    {
+        csv_values[l] = malloc(sizeof(double)*n_features);
+    }
+    int cnt = 0;
+    
+    char* temp_string;
+    temp_string = (char *) malloc(sizeof(char)*100);
+    while(fgets(temp_string, 100, reader)) 
+        csv_values[cnt++] = split(temp_string, ',', n_features);
+    
+    return csv_values;
+}
 
-		vector< vector< double > > read_file(string fname)
-		{
-			ifstream reader;
-			reader.open(fname);
-			vector< vector< double > > csv_values;
-			if (reader.is_open())
-			{
-				string temp_string;
-				while(getline(reader, temp_string)) 
-					csv_values.push_back(this->split(temp_string, ','));
-			}
-			return csv_values;
-		}
-};
 
-bool comparison (pair< int, double > a, pair< int, double > b) {
-    if (a.second < b.second) return true;
-    return false;
+int comparison (const void * a, const void * b) {
+    int *aa = a, *bb = b;
+    if (aa[1] < bb[1]) return 1;
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -79,49 +90,48 @@ int main(int argc, char* argv[]) {
     /* Should start before anything else */
     clock_gettime(CLK, &start_e2e);
     /* Check if enough command-line arguments are taken in. */
-    if(argc < 5){
-        printf( "Usage: %s sizeOfInputArray processors inputFile k \n", argv[0] );
+    if(argc < 4){
+        printf( "Usage: %s filename n_lines n_features\n", argv[0] );
         return -1;
     }
 
-    int n=atoi(argv[1]);    /* size of input array */
-    int p=atoi(argv[2]);    /* number of processors*/
-    string fname = argv[3]; /* the input filename for points */
-    int k = atoi(argv[4]);    /* k in knn :) */
-
-    string problem_name = "matrix_multiplication";
-    string approach_name = "block";
-    //    char buffer[10];
-    //    FILE* inputFile;
+    char *fname = argv[1]; /* the input filename for points */
+    int n_lines = atoi(argv[2]);
+    int n_features = atoi(argv[3]);
     FILE* outputFile;
-    //    inputFile = fopen(argv[3],"r");
-
+    
     char outputFileName[50];        
-    sprintf(outputFileName,"output/%s_%s_%s_%s_output.txt",problem_name,approach_name,argv[1],argv[2]); 
-
+    
+    
     //**********************
     int num_step=atof(argv[1]);
-	KNN *knn = new KNN();
-    vector< vector< double > > points = knn->read_file(fname);
-	vector< pair< int, double > > dis_array;
-    int point = (rand() % points.size()); /* this is the point we'll calculate the nearest neighbors from */
-	pair< int, double > temp;
+	
+    double** points = (double**)malloc(sizeof(double *)*n_lines);
 
+    for(int l = 0; l<n_lines; l++)
+    {
+        points[l] = malloc(sizeof(double)*n_features);
+    }
+    
+    points = read_file(fname, n_lines, n_features);
+	double dis_array[n_lines][2];
+    int point = (rand() % n_lines); /* this is the point we'll calculate the nearest neighbors from */
+	
     // #omp_set_num_threads(p);
     clock_gettime(CLK, &start_alg);    /* Start the algo timer */
 
     /*----------------------Core algorithm starts here----------------------------------------------*/
 
-    for(auto i=0; i< points.size(); i++) {
+    for(int i=0; i<n_lines; i++) {
         double dist = 0;
-        for(auto j=0; j<points[i].size(); j++) {
+        for(int j=0; j<n_lines; j++) {
             dist += (points[i][j] - points[point][j]) * (points[i][j] - points[point][j]);
         }
-		temp.first = i;
-		temp.second = i;
-		dis_array.push_back(temp);
+        dis_array[i][0] = i;
+        dis_array[i][1] = dist;
     }
-    sort(begin(dis_array), end(dis_array), comparison);
+
+    qsort(dis_array, n_lines, sizeof(double *), comparison);
 
     // return the first k but i dont think thats needed for now.
 
