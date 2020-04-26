@@ -90,14 +90,15 @@ int main(int argc, char* argv[]) {
     /* Should start before anything else */
     clock_gettime(CLK, &start_e2e);
     /* Check if enough command-line arguments are taken in. */
-    if(argc < 4){
-        printf( "Usage: %s filename n_lines n_features\n", argv[0] );
+    if(argc < 5){
+        printf( "Usage: %s filename n_processors n_lines n_features\n", argv[0]);
         return -1;
     }
 
     char *fname = argv[1]; /* the input filename for points */
-    int n_lines = atoi(argv[2]);
-    int n_features = atoi(argv[3]);
+    int p = atoi(argv[2]);
+    int n_lines = atoi(argv[3]);
+    int n_features = atoi(argv[4]);
     FILE* outputFile;
     
     //**********************
@@ -114,11 +115,10 @@ int main(int argc, char* argv[]) {
 	double dis_array[n_lines][2];
     int point = (rand() % n_lines); /* this is the point we'll calculate the nearest neighbors from */
 	
-    // #omp_set_num_threads(p);
+    omp_set_num_threads(p);
     clock_gettime(CLK, &start_alg);    /* Start the algo timer */
-
     /*----------------------Core algorithm starts here----------------------------------------------*/
-
+    #pragma omp parallel for private(j, dist) shared(dis_array) num_threads(p)
     for(int i=0; i<n_lines; i++) {
         double dist = 0;
         for(int j=0; j<n_lines; j++) {

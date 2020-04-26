@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 import os
 
-if os.path.isdir(os.getcwd() + '/Alg.pkl') and os.path.isdir(os.getcwd() + '/End.pkl'):
+if not os.path.isdir(os.getcwd() + '/Alg.pkl') and not os.path.isdir(os.getcwd() + '/End.pkl'):
     line_proc_end = []
     line_proc_alg = []
     

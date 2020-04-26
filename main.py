@@ -19,9 +19,9 @@ for n_lines in N_LINES:
         print "Generating features for: " + str(n_features) + " and lines: " + str(n_lines)
         os.system('python generate_data.py ' + str(n_lines) + ' ' + str(n_features))
         print "Compiling serial code: "
-        os.system('g++ -std=c++11 serial_measurement.cpp -fopenmp -o serial')
+        os.system('gcc serial_measurement_new.c -fopenmp -lm -o serial')
         print "Running serial code: "
-        os.system('./serial data_file.txt')
+        os.system('./serial data_file.txt '+str(n_lines)+' '+str(n_features))
 
 print "Making parallel output file"
 os.system('touch output_file_parallel.txt')
@@ -29,7 +29,7 @@ os.system('touch output_file_parallel.txt')
 with open('output_file_parallel.txt', 'w') as f:
     f.write("")
 
-for p in range(1, 16):
+for p in range(1, 3):
     for n_lines in N_LINES:
         for n_features in N_FEATURES:
             with open("output_file_parallel.txt", "a") as f:
