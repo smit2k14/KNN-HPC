@@ -1,9 +1,8 @@
 #!/usr/bin/python
-
 import os
 
-N_LINES = [4, 8, 16, 32, 64]#, 128, 256, 512, 1024, 2048]
-N_FEATURES = [4, 8, 16, 32, 64]#, 128, 256, 512, 1024, 2048]
+N_LINES = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+N_FEATURES = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 print "Making serial outfile file"
 os.system('touch output_file_serial.txt')
  
@@ -29,7 +28,7 @@ os.system('touch output_file_parallel.txt')
 with open('output_file_parallel.txt', 'w') as f:
     f.write("")
 
-for p in range(2, 4):
+for p in range(1, 17):
     for n_lines in N_LINES:
         for n_features in N_FEATURES:
             with open("output_file_parallel.txt", "a") as f:
