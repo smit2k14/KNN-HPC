@@ -37,7 +37,7 @@ struct timespec diff(struct timespec start, struct timespec end){
 double* split(char* line, char value, int n_features) 
 {
     char *temp_string;
-    temp_string = (char *)malloc(sizeof(char)*20);
+    temp_string = (char *)malloc(sizeof(char)*50);
     double *feature_array = (double *) malloc(sizeof(double)*n_features);
     int cnt = 0;
     int cnt2=0;
@@ -47,7 +47,7 @@ double* split(char* line, char value, int n_features)
         {
             char *temp_blah;
             feature_array[cnt++] = strtod(temp_string, &temp_blah);
-            temp_string = (char *)malloc(sizeof(char)*20);
+            temp_string = (char *)malloc(sizeof(char)*50);
         }
         else
         {
@@ -70,8 +70,9 @@ double** read_file(char* fname, int n_lines, int n_features)
     int cnt = 0;
     
     char* temp_string;
-    temp_string = (char *) malloc(sizeof(char)*100);
-    while(fgets(temp_string, 100, reader)) 
+    temp_string = (char *) malloc(sizeof(char)*500);
+    while(fgets(temp_string, 500, reader)) 
+        fflush(stdout);
         csv_values[cnt++] = split(temp_string, ',', n_features);
     
     return csv_values;
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
 
     for(int i=0; i<n_lines; i++) {
         double dist = 0;
-        for(int j=0; j<n_lines; j++) {
+        for(int j=0; j<n_features; j++) {
             dist += (points[i][j] - points[point][j]) * (points[i][j] - points[point][j]);
         }
         dis_array[i][0] = i;
