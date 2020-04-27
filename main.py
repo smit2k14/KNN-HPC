@@ -20,7 +20,7 @@ for n_lines in N_LINES:
         print "Compiling serial code: "
         os.system('gcc serial_measurement_new.c -fopenmp -lm -o serial')
         print "Running serial code: "
-        os.system('./serial data_file.txt '+str(n_lines)+' '+str(n_features))
+        os.system('./serial '+str(n_lines)+' '+str(n_features))
 
 print "Making parallel output file"
 os.system('touch output_file_parallel.txt')
@@ -38,7 +38,7 @@ for p in range(1, 17):
             print "Compiling parallel code: "
             os.system('gcc parallel_measurement_new.c -fopenmp -lm -o parallel')
             print "Running parallel code: "
-            os.system('./parallel '+str(p)+' data_file.txt '+str(n_lines)+' '+str(n_features))
+            os.system('./parallel '+str(p)+' '+str(n_lines)+' '+str(n_features))
         with open('output_file_parallel.txt', 'a') as f:
             f.write('\n\n')
 
