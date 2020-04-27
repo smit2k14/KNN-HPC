@@ -19,6 +19,20 @@ struct timespec diff(struct timespec start, struct timespec end);
     http://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
     http://stackoverflow.com/questions/3523442/difference-between-clock-realtime-and-clock-monotonic
 */
+
+void printArray(int **a, int n, int m)
+{
+    int i, j;
+    for(i = 0; i<n; i++)
+    {
+        for(j = 0; j<m; j++)
+        {
+            printf("%d ",a[i][j]);
+        }
+        printf("\n");
+    }
+}
+
 struct timespec diff(struct timespec start, struct timespec end){
     struct timespec temp;
     if((end.tv_nsec-start.tv_nsec)<0)
@@ -34,48 +48,28 @@ struct timespec diff(struct timespec start, struct timespec end){
     return temp;
 }
 
-double* split(char* line, char value, int n_features) 
+int** generate_numbers(int n_lines, int n_features)
 {
-    char *temp_string;
-    temp_string = (char *)malloc(sizeof(char)*20);
-    double *feature_array = (double *) malloc(sizeof(double)*n_features);
-    int cnt = 0;
-    int cnt2=0;
-    for(int i = 0; i<strlen(line);i++)
+    int **csv_values = (int**)malloc(sizeof(int *)*n_lines);
+    int l, ll;
+    for(l = 0; l<n_lines; l++)
     {
-        if(line[i] == value)
-        {
-            char *temp_blah;
-            feature_array[cnt++] = strtod(temp_string, &temp_blah);
-            temp_string = (char *)malloc(sizeof(char)*20);
-        }
-        else
-        {
-            temp_string[cnt2++] = line[i];
-        }   
-    }
-    return feature_array;
-}
-
-double** read_file(char* fname, int n_lines, int n_features)
-{
-    FILE* reader;
-    reader = fopen(fname, "r");
-    double **csv_values = (double**)malloc(sizeof(double *)*n_lines);
-
-    for(int l = 0; l<n_lines; l++)
-    {
-        csv_values[l] = malloc(sizeof(double)*n_features);
+        csv_values[l] = malloc(sizeof(int)*n_features);
     }
     int cnt = 0;
     
     char* temp_string;
-    temp_string = (char *) malloc(sizeof(char)*100);
-    while(fgets(temp_string, 100, reader)) 
-        csv_values[cnt++] = split(temp_string, ',', n_features);
-    
+    temp_string = (char *) malloc(sizeof(char)*500);
+    for(l = 0; l<n_lines; l++)
+    {
+        for(ll = 0; ll<n_features; ll++)
+        {
+            csv_values[l][ll] = rand();
+        }
+    }
     return csv_values;
 }
+
 
 
 int comparison (const void * a, const void * b) {
@@ -90,50 +84,60 @@ int main(int argc, char* argv[]) {
     /* Should start before anything else */
     clock_gettime(CLK, &start_e2e);
     /* Check if enough command-line arguments are taken in. */
-    if(argc < 5){
-        printf( "Usage: %s filename n_processors n_lines n_features\n", argv[0]);
+    if(argc < 4){
+        printf( "Usage: %s n_processors n_lines n_features\n", argv[0] );
         return -1;
     }
-
-    char *fname = argv[1]; /* the input filename for points */
-    int p = atoi(argv[2]);
-    int n_lines = atoi(argv[3]);
-    int n_features = atoi(argv[4]);
+ /* the input filename for points */
+    int p = atoi(argv[1]);
+    int n_lines = atoi(argv[2]);
+    int n_features = atoi(argv[3]);
     FILE* outputFile;
+    int l,ll;
     
     //**********************
-    int num_step=atof(argv[1]);
-	
-    double** points = (double**)malloc(sizeof(double *)*n_lines);
+    int** points = (int**)malloc(sizeof(int *)*n_lines);
 
-    for(int l = 0; l<n_lines; l++)
+    for(l = 0; l<n_lines; l++)
     {
-        points[l] = malloc(sizeof(double)*n_features);
+        points[l] = (int *)malloc(sizeof(int)*n_features);
     }
     
-    points = read_file(fname, n_lines, n_features);
-	double dis_array[n_lines][2];
+    points = generate_numbers(n_lines, n_features);
+	
+    int **dis_array = (int **)malloc(sizeof(int *)*n_lines);
+    for(l = 0;l<n_lines; l++)
+    {
+        dis_array[l] = (int *)malloc(sizeof(int)*2);
+    }
     int point = (rand() % n_lines); /* this is the point we'll calculate the nearest neighbors from */
 	
+    int i, j;
+    int dist;
+    
     omp_set_num_threads(p);
     clock_gettime(CLK, &start_alg);    /* Start the algo timer */
     /*----------------------Core algorithm starts here----------------------------------------------*/
-    #pragma omp parallel for private(j, dist) shared(dis_array) num_threads(p)
-    for(int i=0; i<n_lines; i++) {
-        double dist = 0;
-        for(int j=0; j<n_lines; j++) {
-            dist += (points[i][j] - points[point][j]) * (points[i][j] - points[point][j]);
+    #pragma omp parallel private(j, dist) num_threads(p)
+    {
+        #pragma omp for
+        for(i=0; i<n_lines; i++)
+        {
+            dist = 0;
+            for(j=0; j<n_features; j++)
+            {
+                //printf("5 %d\n", j);
+                dist += (points[i][j] - points[point][j]) * (points[i][j] - points[point][j]);
+            }
+            dis_array[i][0] = i;
+            dis_array[i][1] = dist;
         }
-        dis_array[i][0] = i;
-        dis_array[i][1] = dist;
     }
-
-    qsort(dis_array, n_lines, sizeof(double *), comparison);
+    qsort(dis_array, n_lines, sizeof(int *), comparison);
 
     // return the first k but i dont think thats needed for now.
 
     /*----------------------Core algorithm finished--------------------------------------------------*/
-
     clock_gettime(CLK, &end_alg);    /* End the algo timer */
     /* Ensure that only the algorithm is present between these two
        timers. Further, the whole algorithm should be present. 
@@ -152,7 +156,7 @@ int main(int argc, char* argv[]) {
         p should be 0 for serial codes!! 
     */
 
-    outputFile = fopen("output_file_serial.txt", "a");    
+    outputFile = fopen("output_file_parallel.txt", "a");    
     fprintf(outputFile, "%d,%ld,%d,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
     return 0;
