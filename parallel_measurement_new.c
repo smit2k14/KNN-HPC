@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
     int n_features = atoi(argv[3]);
     FILE* outputFile;
     int l,ll;
-    int n_steps = 10000;
+    int n_steps = 100000;
     //**********************
     int** points = (int**)malloc(sizeof(int *)*n_lines);
 
@@ -118,11 +118,12 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(p);
     clock_gettime(CLK, &start_alg);    /* Start the algo timer */
     /*----------------------Core algorithm starts here----------------------------------------------*/
-    for(l=0; l<n_steps; l++){
+    for(l=0; l<n_steps; l++)
+    {
+        #pragma omp parallel for private(j, dist) num_threads(p)
         for(i=0; i<n_lines; i++)
         {
             dist = 0;
-            #pragma omp parallel reduction(+: dist)
             for(j=0; j<n_features; j++)
             {
                 //printf("5 %d\n", j);
@@ -156,7 +157,7 @@ int main(int argc, char* argv[]) {
     */
 
     outputFile = fopen("output_file_parallel.txt", "a");    
-    fprintf(outputFile, "%lf,%lf,%lf,%lf\n", e2e.tv_sec/n_steps, e2e.tv_nsec/n_steps, alg.tv_sec/n_steps, alg.tv_nsec/n_steps);
+    fprintf(outputFile, "%ld,%ld,%ld,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
     return 0;
 
