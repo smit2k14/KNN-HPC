@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import os
+import time
 
 line_proc_end = []
 line_proc_alg = []
@@ -23,6 +24,7 @@ with open('output_file_parallel.txt', 'r') as f:
             n_line = int(v[3])
             n_feat = int(v[5])
             if n_line != temp_line_count:
+                print(n_proc, n_line, n_feat)
                 temp_line_count = n_line
                 if len(temp_line_1) != 0:
                     line_proc_end.append(temp_line_1)
@@ -48,7 +50,7 @@ t1 = []
 t2 = []
 for i in range(len(line_proc_alg)):
     t2.append(line_proc_alg[i])
-    if (i+1)%10 == 0:
+    if (i+1)%8 == 0:
         t1.append(t2)
         t2 = []
 
@@ -58,7 +60,7 @@ t1 = []
 t2 = []
 for i in range(len(line_proc_end)):
     t2.append(line_proc_end[i])
-    if (i+1)%10 == 0:
+    if (i+1)%8 == 0:
         t1.append(t2)
         t2 = []
 
@@ -72,13 +74,13 @@ with open('End.pkl', 'wb') as f:
     pickle.dump(line_proc_end, f)
 
 # (processor, line, feature)
-temp = [4, 8, 16, 32, 64]#, 128, 256, 512, 1024, 2048]
-for i in range(10):
+temp = [4, 8, 16, 32, 64, 128, 256, 512]#, 1024, 2048]
+for i in range(len(temp)):
     plt.figure(i+1, figsize = (20, 20))
-    for j in range(10):
-        plt.plot([_ for _ in range(1, 5)], line_proc_alg[:,i,j])
+    for j in range(8):
+        plt.plot([_ for _ in range(1, 16)], line_proc_alg[:,i,j])
     plt.legend(['N_Features 4', 'N_Features number 8', 'N_Features number 16', 'N_Features number 32', 'N_Features number 64', \
-        'N_Features number 128', 'N_Features number 256', 'N_Features number 512', 'N_Features number 1024', 'N_Features number 2048'])
+        'N_Features number 128', 'N_Features number 256', 'N_Features number 512'])
     plt.title('N_Lines {}'.format(temp[i]))
     plt.xlabel('No of Processors')
     plt.ylabel('Time')
