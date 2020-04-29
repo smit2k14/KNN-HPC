@@ -24,7 +24,6 @@ with open('output_file_parallel.txt', 'r') as f:
             n_line = int(v[3])
             n_feat = int(v[5])
             if n_line != temp_line_count:
-                print(n_proc, n_line, n_feat)
                 temp_line_count = n_line
                 if len(temp_line_1) != 0:
                     line_proc_end.append(temp_line_1)
@@ -38,8 +37,8 @@ with open('output_file_parallel.txt', 'r') as f:
         else:
             cnt1 += 1
             v = line.split(',')
-            temp_line_1.append(float(v[1])-float(v[0]))
-            temp_line_2.append(float(v[3])-float(v[2]))
+            temp_line_1.append(float(v[1])*1e-9 + float(v[0]))
+            temp_line_2.append(float(v[3])*1e-9 + float(v[2]))
 
 if len(temp_line_1) != 0:
     line_proc_end.append(temp_line_1)
@@ -67,12 +66,6 @@ for i in range(len(line_proc_end)):
 line_proc_end = np.array(t1)
 print(line_proc_end.shape)
 
-with open('Alg.pkl', 'wb') as f:
-    pickle.dump(line_proc_alg, f)
-
-with open('End.pkl', 'wb') as f:
-    pickle.dump(line_proc_end, f)
-
 # (processor, line, feature)
 temp = [4, 8, 16, 32, 64, 128, 256, 512]#, 1024, 2048]
 for i in range(len(temp)):
@@ -84,4 +77,4 @@ for i in range(len(temp)):
     plt.title('N_Lines {}'.format(temp[i]))
     plt.xlabel('No of Processors')
     plt.ylabel('Time')
-    plt.savefig('plots/line_'+str(i+1)+'.png')
+    plt.savefig('plots/lines/line_'+str(i+1)+'.png')
