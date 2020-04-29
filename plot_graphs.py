@@ -68,13 +68,17 @@ print(line_proc_end.shape)
 
 # (processor, line, feature)
 temp = [4, 8, 16, 32, 64, 128, 256, 512]#, 1024, 2048]
+proc_data = [f'Processor: {i+1}' for i in range(15)]
+
 for i in range(len(temp)):
     plt.figure(i+1, figsize = (20, 20))
-    for j in range(8):
-        plt.plot([_ for _ in range(1, 16)], line_proc_alg[:,i,j])
-    plt.legend(['N_Features 4', 'N_Features number 8', 'N_Features number 16', 'N_Features number 32', 'N_Features number 64', \
-        'N_Features number 128', 'N_Features number 256', 'N_Features number 512'])
+    for j in range(0, line_proc_alg.shape[0]):
+        res = [xj / xi for xi, xj in zip(line_proc_alg[j,:,i], line_proc_alg[0,:,i])] 
+        plt.plot(temp, res)
+    plt.legend(proc_data)
+    #plt.legend(['N_Features 4', 'N_Features number 8', 'N_Features number 16', 'N_Features number 32', 'N_Features number 64', \
+    #    'N_Features number 128', 'N_Features number 256', 'N_Features number 512'])
     plt.title('N_Lines {}'.format(temp[i]))
     plt.xlabel('No of Processors')
     plt.ylabel('Time')
-    plt.savefig('plots/lines/line_'+str(i+1)+'.png')
+    plt.savefig('plots/processors_speedup/proc_'+str(i+1)+'.png')
