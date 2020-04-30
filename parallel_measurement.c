@@ -33,6 +33,66 @@ void printArray(int **a, int n, int m)
     }
 }
 
+int partition(int **a, int p, int r)
+{
+    int lt[r-p][2];
+    int gt[r-p][2];
+    int i;
+    int j;
+    int key = a[r][1];
+    int lt_n = 0;
+    int gt_n = 0;
+
+#pragma omp parallel for
+    for(i = p; i < r; i++)
+    {
+        if(a[i][1] < a[r][1])
+        {
+            lt[lt_n][0] = a[i][0];
+            lt[lt_n++][1] = a[i][1];
+        }
+        else
+        {
+            gt[gt_n][0] = a[i][0];
+            gt[gt_n++][1] = a[i][1];
+        }   
+    }   
+
+    for(i = 0; i < lt_n; i++)
+    {
+        a[p + i][0] = lt[i][0];
+        a[p + i][1] = lt[i][1];
+    }   
+
+    a[p + lt_n][1] = key;
+
+    for(j = 0; j < gt_n; j++)
+    {
+        a[p + lt_n + j + 1][0] = gt[j][0];
+        a[p + lt_n + j + 1][1] = gt[j][1];
+    }   
+
+    return p + lt_n;
+}
+
+void quicksort(int **a, int p, int r)
+{
+    int div;
+
+    if(p < r)
+    {
+        div = partition(a, p, r);
+#pragma omp parallel sections
+        {   
+#pragma omp section
+            quicksort(a, p, div - 1); 
+#pragma omp section
+            quicksort(a, div + 1, r); 
+
+        }
+    }
+}
+
 struct timespec diff(struct timespec start, struct timespec end){
     struct timespec temp;
     if((end.tv_nsec-start.tv_nsec)<0)
@@ -64,7 +124,7 @@ int** generate_numbers(int n_lines, int n_features)
     {
         for(ll = 0; ll<n_features; ll++)
         {
-            csv_values[l][ll] = rand();
+            csv_values[l][ll] = rand()%7;
         }
     }
     return csv_values;
@@ -113,7 +173,7 @@ int main(int argc, char* argv[]) {
     int point = (rand() % n_lines); /* this is the point we'll calculate the nearest neighbors from */
 	
     int i, j;
-    int dist;
+    int dist, final_dist;
     
     omp_set_num_threads(p);
     clock_gettime(CLK, &start_alg);    /* Start the algo timer */
@@ -126,14 +186,14 @@ int main(int argc, char* argv[]) {
             dist = 0;
             for(j=0; j<n_features; j++)
             {
-                //printf("5 %d\n", j);
                 dist += (points[i][j] - points[point][j]) * (points[i][j] - points[point][j]);
             }
+            //printf("%d %d\n", i, dist);
             dis_array[i][0] = i;
             dis_array[i][1] = dist;
         }
+        quicksort(dis_array, 0, n_lines-1);
     }
-    qsort(dis_array, n_lines, sizeof(int *), comparison);
 
     // return the first k but i dont think thats needed for now.
 
