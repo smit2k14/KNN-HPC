@@ -4,81 +4,121 @@ import pickle
 import os
 import time
 
-line_proc_end = []
-line_proc_alg = []
+def get_array_parallel(fname):
+    line_proc_end = []
+    line_proc_alg = []
 
-temp_line_1 = []
-temp_line_2 = []
+    temp_line_1 = []
+    temp_line_2 = []
 
-temp_p_count = 0
-temp_line_count = 0
+    temp_p_count = 0
+    temp_line_count = 0
 
-cnt1 = 0
-cnt2 = 0
+    with open(fname, 'r') as f:
+        for line in f:       
+            if line[0]=='P':
+                v = line.split(' ')
+                n_proc = int(v[1])
+                n_line = int(v[3])
+                n_feat = int(v[5])
+                if n_proc != temp_p_count:
+                    temp_p_count = n_proc
+                    if len(temp_line_1) != 0:
+                        line_proc_end.append(temp_line_1)
+                    if len(temp_line_2) != 0:
+                        line_proc_alg.append(temp_line_2)
+                    temp_line_1 = []
+                    temp_line_2 = []
+                    
+            elif line[0]=='\n':
+                continue
+            else:
+                v = line.split(',')
+                temp_line_1.append(float(v[1])*1e-9 + float(v[0]))
+                temp_line_2.append(float(v[3])*1e-9 + float(v[2]))
 
-with open('output_file_parallel.txt', 'r') as f:
-    for line in f:       
-        if line[0]=='P':
-            v = line.split(' ')
-            n_proc = int(v[1])
-            n_line = int(v[3])
-            n_feat = int(v[5])
-            if n_line != temp_line_count:
-                temp_line_count = n_line
-                if len(temp_line_1) != 0:
-                    line_proc_end.append(temp_line_1)
-                if len(temp_line_2) != 0:
-                    line_proc_alg.append(temp_line_2)
-                temp_line_1 = []
-                temp_line_2 = []
+    if len(temp_line_1) != 0:
+        line_proc_end.append(temp_line_1)
+
+    if len(temp_line_2) != 0:
+        line_proc_alg.append(temp_line_2)
+
+    line_proc_alg = np.array(line_proc_alg)
+    line_proc_end = np.array(line_proc_end)
+    return line_proc_alg, line_proc_end
+
+def get_array_serial(fname):
+    line_proc_end = []
+    line_proc_alg = []
+
+    temp_line_1 = []
+    temp_line_2 = []
+
+    temp_line_count = 0
+
+    with open(fname, 'r') as f:
+        for line in f:       
+            if line[0]=='N':
+                v = line.split(' ')
+                n_line = int(v[1])
+                n_feat = int(v[3])
+                    
+            elif line[0]=='\n':
+                continue
             
-        elif line[0]=='\n':
-            continue
-        else:
-            cnt1 += 1
-            v = line.split(',')
-            temp_line_1.append(float(v[1])*1e-9 + float(v[0]))
-            temp_line_2.append(float(v[3])*1e-9 + float(v[2]))
+            else:
+                v = line.split(',')
+                temp_line_1.append(float(v[1])*1e-9 + float(v[0]))
+                temp_line_2.append(float(v[3])*1e-9 + float(v[2]))
 
-if len(temp_line_1) != 0:
-    line_proc_end.append(temp_line_1)
-if len(temp_line_2) != 0:
-    line_proc_alg.append(temp_line_2)
+    if len(temp_line_1) != 0:
+        line_proc_end.append(temp_line_1)
 
-t1 = []
-t2 = []
-for i in range(len(line_proc_alg)):
-    t2.append(line_proc_alg[i])
-    if (i+1)%8 == 0:
-        t1.append(t2)
-        t2 = []
+    if len(temp_line_2) != 0:
+        line_proc_alg.append(temp_line_2)
 
-line_proc_alg = np.array(t1)
-print(line_proc_alg.shape)
-t1 = []
-t2 = []
-for i in range(len(line_proc_end)):
-    t2.append(line_proc_end[i])
-    if (i+1)%8 == 0:
-        t1.append(t2)
-        t2 = []
+    line_proc_alg = np.array(line_proc_alg)
+    line_proc_end = np.array(line_proc_end)
+    return line_proc_alg, line_proc_end
 
-line_proc_end = np.array(t1)
-print(line_proc_end.shape)
+line_proc_alg_dynamic, line_proc_end_dynamic = get_array_parallel('output_file_parallel_dynamic.txt')
+line_proc_alg_guided, line_proc_end_guided = get_array_parallel('output_file_parallel_guided.txt')
+line_proc_alg_normal, line_proc_end_normal = get_array_parallel('output_file_parallel_normal.txt')
+line_proc_alg_static, line_proc_end_static = get_array_parallel('output_file_parallel_static.txt')
+line_proc_alg_serial, line_proc_end_serial = get_array_serial('output_file_serial.txt')
 
-# (processor, line, feature)
-temp = [4, 8, 16, 32, 64, 128, 256, 512]#, 1024, 2048]
-proc_data = [f'Processor: {i+1}' for i in range(15)]
-
-for i in range(len(temp)):
-    plt.figure(i+1, figsize = (20, 20))
-    for j in range(0, line_proc_alg.shape[0]):
-        res = [xj / xi for xi, xj in zip(line_proc_alg[j,:,i], line_proc_alg[0,:,i])] 
-        plt.plot(temp, res)
-    plt.legend(proc_data)
-    #plt.legend(['N_Features 4', 'N_Features number 8', 'N_Features number 16', 'N_Features number 32', 'N_Features number 64', \
-    #    'N_Features number 128', 'N_Features number 256', 'N_Features number 512'])
-    plt.title('N_Lines {}'.format(temp[i]))
-    plt.xlabel('No of Processors')
+# Time Curve
+def time_curve(line_proc_alg, fname):
+    plt.figure(figsize=(30, 30))
+    problem_size = [2**i for i in range(2, 10)]
+    plt.plot(problem_size, line_proc_end_serial[0, :])
+    for i in range(line_proc_alg.shape[0]):
+        plt.plot(problem_size, line_proc_alg[i, :])
+    plt.xlabel('Problem Size')
     plt.ylabel('Time')
-    plt.savefig('plots/processors_speedup/proc_'+str(i+1)+'.png')
+    plt.legend([f'No Processors : {i}' for i in range(17)])
+    plt.savefig(f'plots_outer/time/{fname}.png')
+
+time_curve(line_proc_alg_dynamic, 'dynamic')
+time_curve(line_proc_alg_guided, 'guided')
+time_curve(line_proc_alg_normal, 'normal')
+time_curve(line_proc_alg_static, 'static')
+
+# Time Curve
+def speedup_curve(line_proc_alg, fname):
+    plt.figure(figsize=(30, 30))
+    problem_size = [2**i for i in range(2, 10)]
+    res = [xj / xi for xi, xj in zip(line_proc_alg_serial[0, :], line_proc_alg_serial[0, :])]
+    plt.plot(problem_size, res)
+    for i in range(line_proc_alg.shape[0]):
+        res = [xj / xi for xi, xj in zip(line_proc_alg[i, :], line_proc_alg_serial[0, :])]
+        plt.plot(problem_size, res)
+    plt.xlabel('Problem Size')
+    plt.ylabel('Speedup')
+    plt.legend([f'No Processors : {i}' for i in range(17)])
+    plt.savefig(f'plots_outer/speedup/{fname}.png')
+
+speedup_curve(line_proc_alg_dynamic, 'dynamic')
+speedup_curve(line_proc_alg_guided, 'guided')
+speedup_curve(line_proc_alg_normal, 'normal')
+speedup_curve(line_proc_alg_static, 'static')
