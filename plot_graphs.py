@@ -92,8 +92,10 @@ def time_curve(line_proc_alg, fname):
     plt.figure(figsize=(30, 30))
     problem_size = [2**i for i in range(2, 10)]
     plt.plot(problem_size, line_proc_end_serial[0, :])
+    plt.scatter(problem_size, line_proc_end_serial[0, :])
     for i in range(line_proc_alg.shape[0]):
         plt.plot(problem_size, line_proc_alg[i, :])
+        plt.scatter(problem_size, line_proc_alg[i, :])
     plt.xlabel('Problem Size')
     plt.ylabel('Time')
     plt.legend([f'No Processors : {i}' for i in range(17)])
@@ -110,9 +112,11 @@ def speedup_curve(line_proc_alg, fname):
     problem_size = [2**i for i in range(2, 10)]
     res = [xj / xi for xi, xj in zip(line_proc_alg_serial[0, :], line_proc_alg_serial[0, :])]
     plt.plot(problem_size, res)
+    plt.scatter(problem_size, res)
     for i in range(line_proc_alg.shape[0]):
         res = [xj / xi for xi, xj in zip(line_proc_alg[i, :], line_proc_alg_serial[0, :])]
         plt.plot(problem_size, res)
+        plt.scatter(problem_size, res)
     plt.xlabel('Problem Size')
     plt.ylabel('Speedup')
     plt.legend([f'No Processors : {i}' for i in range(17)])
