@@ -106,7 +106,7 @@ time_curve(line_proc_alg_guided, 'guided')
 time_curve(line_proc_alg_normal, 'normal')
 time_curve(line_proc_alg_static, 'static')
 
-# Time Curve
+# Speedup Curve
 def speedup_curve(line_proc_alg, fname):
     plt.figure(figsize=(30, 30))
     problem_size = [2**i for i in range(2, 10)]
@@ -126,3 +126,24 @@ speedup_curve(line_proc_alg_dynamic, 'dynamic')
 speedup_curve(line_proc_alg_guided, 'guided')
 speedup_curve(line_proc_alg_normal, 'normal')
 speedup_curve(line_proc_alg_static, 'static')
+
+# Efficiency Curve
+def efficiency_curve(line_proc_alg, fname):
+    plt.figure(figsize=(30, 30))
+    problem_size = [2**i for i in range(2, 10)]
+    res = [xj / xi for xi, xj in zip(line_proc_alg_serial[0, :], line_proc_alg_serial[0, :])]
+    plt.plot(problem_size, res)
+    plt.scatter(problem_size, res)
+    for i in range(line_proc_alg.shape[0]):
+        res = [xj / (xi * (i+1)) for xi, xj in zip(line_proc_alg[i, :], line_proc_alg_serial[0, :])]
+        plt.plot(problem_size, res)
+        plt.scatter(problem_size, res)
+    plt.xlabel('Problem Size')
+    plt.ylabel('Efficiency')
+    plt.legend([f'No Processors : {i}' for i in range(17)])
+    plt.savefig(f'plots_outer/efficiency/{fname}.png')
+
+efficiency_curve(line_proc_alg_dynamic, 'dynamic')
+efficiency_curve(line_proc_alg_guided, 'guided')
+efficiency_curve(line_proc_alg_normal, 'normal')
+efficiency_curve(line_proc_alg_static, 'static')
