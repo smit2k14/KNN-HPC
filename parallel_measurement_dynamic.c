@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     /*----------------------Core algorithm starts here----------------------------------------------*/
     for(l=0; l<n_steps; l++)
     {
-        #pragma omp parallel for private(j, dist) num_threads(p)
+        #pragma omp parallel for private(j, dist) num_threads(p) schedule(dynamic)
         for(i=0; i<n_lines; i++)
         {
             dist = 0;
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
         p should be 0 for serial codes!! 
     */
 
-    outputFile = fopen("output_file_parallel.txt", "a");    
+    outputFile = fopen("output_file_parallel_dynamic.txt", "a");    
     fprintf(outputFile, "%ld,%ld,%ld,%ld\n", e2e.tv_sec, e2e.tv_nsec, alg.tv_sec, alg.tv_nsec);
 
     return 0;
