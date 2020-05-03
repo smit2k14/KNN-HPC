@@ -94,7 +94,7 @@ for p in range(1, 17):
         f.write('\n\n')
 
 print "================================================="
-print "Guided parallel done. Will do guided dynamic now!"
+print "Guided parallel done. Will do dynamic parallel now!"
 print "================================================="
 
 print "Making parallel dynamic output file"
